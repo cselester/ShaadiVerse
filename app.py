@@ -63,17 +63,21 @@ def plan_with_groq(name, religion, start_date, end_date, budget, location, cerem
     }
     save_wedding_session(session)
     prompt = f"""
-    You are ShaadiVerse Planner AI.
-
-    Couple: {name}
+    You are an AI Wedding Planner for ShaadiVerse.
+    Couple Name: {name}
     Religion: {religion}
-    Location: {location}
-    Dates: {start_date} to {end_date}
-    Guests: {guests}
-    Budget: ₹{budget}
+    Wedding Dates: {start_date} to {end_date}
     Ceremonies: {ceremonies}
-
-    Create a detailed, day-wise wedding schedule with timings and short notes.
+    Task:
+    - Create a complete wedding event schedule.
+    - Include date, time, and brief notes for each event.
+    - Ensure realistic gaps between events if us if user input.
+    - Optimize sequence (e.g., Haldi → Mehendi → Sangeet → Wedding → Reception).
+    - Follow Indian wedding customs for the selected religion.
+    -
+    Output format:
+    1. [Ceremony Name] – [Date] at [Time]
+       Notes: [Short description less than 30 words]
     """
     response = llm.invoke(prompt)
     text = response.content.strip()
@@ -82,7 +86,11 @@ def plan_with_groq(name, religion, start_date, end_date, budget, location, cerem
     return text
 
 def update_schedule(existing_schedule, update_request):
-    prompt = f"Current schedule:\n{existing_schedule}\n\nUser request: {update_request}\n\nUpdate logically."
+    prompt = f"""Here is the current wedding schedule:
+    {existing_schedule}
+    User request: {update_request}
+    Update the schedule accordingly.
+    Maintain the same format and ensure timing/logical flow makes sense."""
     return llm.invoke(prompt).content.strip()
 
 # -------------------------
@@ -196,3 +204,4 @@ with gr.Blocks(theme=gr.themes.Soft()) as demo:
                           [schedule_out,alloc_table,venue_table,caterer_table,photog_table,music_table,decor_table,chart])
 
 demo.launch()
+
